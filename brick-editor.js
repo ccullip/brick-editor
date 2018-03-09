@@ -1,6 +1,7 @@
 var editor;
 var position;
 
+
 // initialize dictionary
 var blockDict = [
     {
@@ -74,6 +75,53 @@ function start_brick_editor() {
     editor.onMouseLeave(function (e) {
         position = editor.getPosition();
     });
+
+    var decorations = editor.deltaDecorations([], []);
+    // function isAtEndOfBlock?
+
+    function isAtBlockBoundary(buffer, position, atStart) {
+        
+    }
+
+    var backspaceCommand = editor.addCommand(monaco.KeyCode.Backspace, function (){
+        var buffer = editor.getValue();
+        position = editor.getPosition();
+        var ast = esprima.parseScript(buffer, { range: true, tokens: true, comment: true, loc: true });
+        var allowBackspace = true;
+        estraverse.traverse(ast, {
+            enter: function(node){
+                if ((node.type == "IfStatement" || 
+                    node.type == "ForStatement" || 
+                    node.type == "FunctionDeclaration" || 
+                    node.type == "WhileStatement" ||
+                    node.type == "VariableDeclaration" ||
+                    node.type == "ExpressionStatement") &&
+                    position.lineNumber == node.loc.end.line && position.column - 1 == node.loc.end.column) {
+                    allowBackspace = false;
+                    decorations =editor.deltaDecorations([], [
+                        { range: new monaco.Range(node.loc.start.line, node.loc.start.column, node.loc.end.line, node.loc.end.column), 
+                        options: { isWholeLine: true, className: 'highlight'}}
+                        ]);
+                    setTimeout(function() {
+                        var response = confirm("Are you sure you wish to delete?");
+                        if (response){
+                            // delete node
+                            var beginPosition = { lineNumber: node.loc.start.line, column: node.loc.start.column};
+                            var endPosition = {lineNumber: node.loc.end.line, column: node.loc.end.column + 1};
+                            editor.setValue(deleteBlock(beginPosition, endPosition, position));
+                        }
+                    }, 100);
+                    
+                }
+                //console.log("Entered node ", node.type);
+                //console.log("Node value ", node.value);
+            },
+        })
+        if (allowBackspace == true){
+            editor.setValue(deleteChar(position));
+            editor.setPosition(position);
+        }
+    });
 }
 
 // add a tab for every four spaces before cursor position for correct indenting
@@ -117,6 +165,25 @@ function addBlock(template, buffer, position) {
     var tabs = getIndent(position);
 
     return [firstPart, indentCode(template, tabs), lastPart].join("");
+}
+
+// delete a block
+function deleteBlock(beginPosition, endPosition, position){
+    var buffer = editor.getValue();
+    var firstPart = getBeforePosition(buffer, beginPosition);
+    var lastPart = getAfterPosition(buffer, endPosition);
+
+    return [firstPart, lastPart].join('');
+}
+
+// delete a character
+function deleteChar(position){
+    var buffer = editor.getValue();
+    var beginPosition = {lineNumber: position.lineNumber, column: position.column - 1}
+    console.log(position.column - 1);
+    var firstPart = getBeforePosition(buffer, beginPosition);
+    var lastPart = getAfterPosition(buffer, position);
+    return [firstPart, lastPart].join('');
 }
 
 // adds all the blocks to the button container
