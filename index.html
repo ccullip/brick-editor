@@ -22,9 +22,11 @@
         // which means we cannot load monaco after bundle.js has been loaded
         var esprima = null;
         var escodegen = null;
+        var estraverse = null;
         window.onload = function() {
             esprima = require("esprima");
             escodegen = require("escodegen");
+            estraverse = require("estraverse");
             addBlocksHTML();
         }
     </script>
