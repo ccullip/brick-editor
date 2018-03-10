@@ -104,7 +104,12 @@ function start_brick_editor() {
     var backspaceCommand = editor.addCommand(monaco.KeyCode.Backspace, function (){
         var buffer = editor.getValue();
         position = editor.getPosition();
-        var ast = esprima.parseScript(buffer, { range: true, tokens: true, comment: true, loc: true });
+        try {
+            var ast = esprima.parseScript(buffer, { range: true, tokens: true, comment: true, loc: true });
+        } catch(error) {
+            return;
+        }
+        console.log(ast);
         var allowBackspace = true;
         estraverse.traverse(ast, {
             enter: function(node){
@@ -116,7 +121,7 @@ function start_brick_editor() {
                     node.type == "ExpressionStatement") &&
                     position.lineNumber == node.loc.end.line && position.column - 1 == node.loc.end.column) {
                     allowBackspace = false;
-                    decorations =editor.deltaDecorations([], [
+                    decorations = editor.deltaDecorations([], [
                         { range: new monaco.Range(node.loc.start.line, node.loc.start.column, node.loc.end.line, node.loc.end.column), 
                         options: { isWholeLine: true, className: 'highlight'}}
                         ]);
