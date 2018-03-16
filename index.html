@@ -12,7 +12,6 @@
     <div id="buttonContainer">
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script type="text/javascript" src="../node_modules/estraverse/estraverse.browser.js"></script>
     <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
     <script src="brick-editor.js"></script>
     <script>
@@ -27,13 +26,13 @@
         // load other modules when ready
         // this is necessary because bundle.js overwrites require()
         // which means we cannot load monaco after bundle.js has been loaded
-        var esprima = null;
-        var escodegen = null;
+        var recast = null;
         var estraverse = null;
+        var esprima = null;
         window.onload = function() {
-            esprima = require("esprima");
-            escodegen = require("escodegen");
+            recast = require("recast");
             estraverse = require("estraverse");
+            esprima = require("esprima");
             addBlocksHTML();
         }
     </script>
