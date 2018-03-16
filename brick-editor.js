@@ -1,6 +1,7 @@
 var editor;
 var position;
-
+var b = recast.types.builders;
+var n = recast.types.namedTypes;
 
 // initialize dictionary
 var blockDict = [
@@ -104,14 +105,11 @@ function start_brick_editor() {
     var backspaceCommand = editor.addCommand(monaco.KeyCode.Backspace, function (){
         var buffer = editor.getValue();
         position = editor.getPosition();
-        try {
-            var ast = esprima.parseScript(buffer, { range: true, tokens: true, comment: true, loc: true });
-        } catch(error) {
-            return;
-        }
-        console.log(ast);
+        
+        var ast = recast.parse(buffer);
+        
         var allowBackspace = true;
-        estraverse.traverse(ast, {
+        estraverse.traverse(ast.program, {
             enter: function(node){
                 if ((node.type == "IfStatement" || 
                     node.type == "ForStatement" || 
@@ -133,12 +131,9 @@ function start_brick_editor() {
                             var endPosition = {lineNumber: node.loc.end.line, column: node.loc.end.column + 1};
                             editor.setValue(deleteBlock(beginPosition, endPosition, position));
                         }
-                    }, 100);
-                    
-                }
-                //console.log("Entered node ", node.type);
-                //console.log("Node value ", node.value);
-            },
+                    }, 100);  
+                } 
+            }
         })
         if (allowBackspace == true){
             editor.setValue(deleteChar(position));
@@ -179,9 +174,7 @@ function buttonHandler(i) {
 
     // add block to buffer string and update editor
     var new_text = addBlock(template, buffer, position);
-    var ast = esprima.parseScript(new_text, {range: true, tokens: true, comment: true});
-    ast = escodegen.attachComments(ast, ast.comments, ast.tokens);
-    editor.setValue(escodegen.generate(ast, { comment: true }));
+    editor.setValue(recast.print(recast.parse(new_text)).code);
    
     // update cursor position
     editor.setPosition(position);

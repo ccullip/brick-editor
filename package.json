@@ -17,11 +17,9 @@
   },
   "dependencies": {
     "browserify": "16.1.0",
-    "escodegen": "^1.9.1",
-    "esprima": "^4.0.0",
-    "esrefactor": "^0.1.0",
     "estraverse": "^4.2.0",
     "http-server": "0.11.1",
-    "monaco-editor": "0.10.1"
+    "monaco-editor": "0.10.1",
+    "recast": "^0.14.5"
   }
 }
