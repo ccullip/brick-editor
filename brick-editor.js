@@ -137,11 +137,11 @@ function onPointInsert() {
  */
 function onPointBackspace() {
     console.log("on point backspace"); // eslint-disable-line no-console
-    if (attemptParse(editor.getValue())) {
+    var buffer = editor.getValue();
+    var ast = attemptParse(buffer);
+    if (ast) {
         var cursor = getCursor();
         var oneBack = makeCursor(cursor.lineNumber, cursor.column - 1);
-        var buffer = editor.getValue();
-        var ast = attemptParse(buffer);
         if (cursorAtEndOfBlock(ast, cursor, BLOCK_DELETE_TYPES)) {
             var node = findClosestDeletableBlock(ast, cursor);
             if (highlighted) {
